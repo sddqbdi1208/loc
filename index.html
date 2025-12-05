@@ -1,66 +1,59 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Send Location</title>
+  <meta charset="UTF-8">
+  <title>Share Lokasi</title>
 </head>
 <body>
 
-<button id="sendBtn">Kirim Lokasi</button>
-
-<pre id="log"></pre>
+<button id="getLocationBtn">Klik Untuk Kirim Lokasi</button>
+<p id="status"></p>
 
 <script>
-const WEB_APP_URL = "https://location.suwarno22886.workers.dev/";
+const SERVER_URL = "https://script.google.com/macros/s/AKfycbwyrjQ-8jDIDCVOO1bUhkn4ktjJKPX074v-_mCqcqUsfyqcHzzzgZjwEVAJYfx0OQFn/exec"; // GANTI DISINI
 
-function log(msg) {
-    document.getElementById("log").textContent += msg + "\n";
-}
+document.getElementById("getLocationBtn").addEventListener("click", () => {
+  const status = document.getElementById("status");
+  status.textContent = "Meminta izin lokasi...";
 
-document.getElementById("sendBtn").onclick = () => {
-    if (!confirm("Apakah kamu yakin ingin mengirim lokasi?")) return;
+  if (!navigator.geolocation) {
+    status.textContent = "Browser tidak mendukung geolocation.";
+    return;
+  }
 
-    log("• Konfirmasi OK");
-    log("• Mengambil IP…");
+  navigator.geolocation.getCurrentPosition(async (pos) => {
 
-    fetch("https://api.ipify.org?format=json")
-        .then(res => res.json())
-        .then(ipData => {
-            const ip = ipData.ip;
-            log("• IP: " + ip);
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const acc = pos.coords.accuracy;
+    const device = navigator.userAgent;
 
-            log("• Mengambil lokasi…");
-            navigator.geolocation.getCurrentPosition(
-                pos => {
-                    log("• Lokasi berhasil didapat");
+    status.textContent = "Mengirim ke server...";
 
-                    const data = {
-                        latitude: pos.coords.latitude,
-                        longitude: pos.coords.longitude,
-                        accuracy: pos.coords.accuracy,
-                        ip: ip,
-                        userAgent: navigator.userAgent
-                    };
+    try {
 
-                    log("• Mengirim ke server…");
+      const res = await fetch(SERVER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          latitude: lat,
+          longitude: lon,
+          accuracy: acc,
+          userAgent: device,
+        })
+      });
 
-                    fetch(WEB_APP_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(data)
-                    })
-                    .then(r => r.text())
-                    .then(t => log("• Server: " + t))
-                    .catch(err => log("• ERROR kirim data: " + err));
+      status.textContent = "Berhasil mengirim lokasi.";
 
-                },
-                err => log("• ERROR lokasi: " + err.message),
-                { enableHighAccuracy: true }
-            );
-        });
-};
+    } catch (err) {
+      status.textContent = "Gagal mengirim: " + err;
+    }
+
+  }, (err) => {
+    status.textContent = "Lokasi ditolak atau error.";
+  });
+});
 </script>
 
 </body>
 </html>
-
