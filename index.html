@@ -1,127 +1,64 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Konfirmasi Lokasi</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #eef1f5;
-      padding: 40px;
-      text-align: center;
-    }
-
-    .card {
-      background: white;
-      padding: 25px;
-      border-radius: 14px;
-      width: 90%;
-      max-width: 420px;
-      margin: auto;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      margin-bottom: 10px;
-    }
-
-    button {
-      background: #1a73e8;
-      color: white;
-      font-size: 18px;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    #log {
-      background: #000;
-      color: #0f0;
-      font-family: monospace;
-      font-size: 12px;
-      text-align: left;
-      padding: 10px;
-      margin-top: 20px;
-      border-radius: 6px;
-      height: 120px;
-      overflow-y: auto;
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Send Location</title>
 </head>
 <body>
 
-<div class="card">
-  <h2>Konfirmasi Akses Lokasi</h2>
-  <p>Tekan tombol di bawah untuk membagikan lokasi Anda.</p>
+<button id="sendBtn">Kirim Lokasi</button>
 
-  <button onclick="confirmLocation()">Izinkan & Kirim Lokasi</button>
-</div>
-
-<div id="log"></div>
+<pre id="log"></pre>
 
 <script>
-function log(text) {
-  const box = document.getElementById("log");
-  box.style.display = "block";
-  box.innerHTML += text + "<br>";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw5ajWqfPwU04qMWqA8bF19RTN8lD7HXAVZMG5EbQMy9LMUp0K6VDry6PPMC0icoSdU/exec";
+
+function log(msg) {
+    document.getElementById("log").textContent += msg + "\n";
 }
 
-async function confirmLocation() {
-  if (!confirm("Apakah Anda ingin mengaktifkan lokasi dan mengirimkannya?")) {
-    alert("Aksi dibatalkan.");
-    return;
-  }
+document.getElementById("sendBtn").onclick = () => {
+    if (!confirm("Apakah kamu yakin ingin mengirim lokasi?")) return;
 
-  log("• Konfirmasi OK");
+    log("• Konfirmasi OK");
+    log("• Mengambil IP…");
 
-  // ambil IP
-  log("• Mengambil IP…");
-  const ip = await fetch("https://api.ipify.org?format=json").then(r => r.json());
-  log("• IP: " + ip.ip);
+    fetch("https://api.ipify.org?format=json")
+        .then(res => res.json())
+        .then(ipData => {
+            const ip = ipData.ip;
+            log("• IP: " + ip);
 
-  if (!navigator.geolocation) {
-    alert("Browser tidak mendukung lokasi.");
-    log("• ERROR: Browser tidak mendukung lokasi");
-    return;
-  }
+            log("• Mengambil lokasi…");
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    log("• Lokasi berhasil didapat");
 
-  navigator.geolocation.getCurrentPosition(async pos => {
-      log("• Lokasi berhasil diambil");
+                    const data = {
+                        latitude: pos.coords.latitude,
+                        longitude: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy,
+                        ip: ip,
+                        userAgent: navigator.userAgent
+                    };
 
-      const data = {
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-        accuracy: pos.coords.accuracy,
-        ip: ip.ip,
-        userAgent: navigator.userAgent,
-      };
+                    log("• Mengirim ke server…");
 
-      log("• Mengirim ke server…");
+                    fetch(WEB_APP_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    })
+                    .then(r => r.text())
+                    .then(t => log("• Server: " + t))
+                    .catch(err => log("• ERROR kirim data: " + err));
 
-      try {
-        const response = await fetch("https://script.google.com/macros/s/AKfycbyE7-9AuKkAvO9cUJ5t6XeqnPH-K5HIxMUYtC2_V49DOLL9F121IzuF1lA7JhEQBVtd/exec", {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: { "Content-Type": "application/json" }
+                },
+                err => log("• ERROR lokasi: " + err.message),
+                { enableHighAccuracy: true }
+            );
         });
-
-        const text = await response.text();
-        log("• Server response: " + text);
-
-        alert("Lokasi berhasil dikirim!");
-      } catch (e) {
-        log("• ERROR kirim data: " + e);
-        alert("Gagal mengirim data.");
-      }
-  }, err => {
-      log("• ERROR Geolocation: " + err.message);
-      alert("Lokasi gagal diambil: " + err.message);
-  });
-}
+};
 </script>
 
 </body>
